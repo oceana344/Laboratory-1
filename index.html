@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>Socket IO</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+	#canvas{
+	border:4px solid #ddd;
+	}
+</style>
+<script>
+var interval,drawing = false;
+window.onload = function(){
+socket = io.connect("http://localhost:8080");
+window.canvas = document.getElementById("canvas");
+
+canvas.onmousedown = function(e){
+drawing = true;
+};
+
+canvas.onmousemove = function(e){
+if(!drawing)
+	return false;
+var x = e.pageX-canvas.offsetLeft;
+var y = e.pageY-canvas.offsetTop;
+var radius = 4;		
+var color = "#000";		
+draw(x,y,radius,color);
+socket.emit('draw',{x:x,y:y,r:radius,color:color});
+};
+
+document.onmouseup = function(e){
+drawing = false;
+}
+
+function draw(x,y,radius,color){
+var ctx = canvas.getContext("2d");
+ctx.beginPath();
+ctx.arc(x,y,radius,0,2*Math.PI);
+ctx.fillStyle= color;
+ctx.fill();
+ctx.closePath();
+}
+
+socket.on('draw',function(data){
+draw(data.x,data.y,data.r,data.color);
+}
+);
+}
+
+</script>
+</head>
+<body>
+<canvas id = "canvas" width  = "700"  height = "400"></canvas>
+</body>
+</html>
